@@ -13,12 +13,13 @@ import static graphrobustness.Util.map;
 public class NeoClientPerfTest {
 
     public static final String QUERY = "create ({name:{name},age:{age},date:{date}})";
-    private static final int COUNT = 100;
+    private static final int COUNT = Integer.parseInt(System.getProperty("statements","100"));
     public static final int CPU = Runtime.getRuntime().availableProcessors();
-    private static final int RUNS = 10000;
+    private static final int RUNS = Integer.parseInt(System.getProperty("statements","10000"));
+    public static final String URL = System.getProperty("url","http://localhost:7474/");
 
     public static void main(String[] args) throws Exception {
-        final NeoClient client = new NeoClient("http://localhost:7474/");
+        final NeoClient client = new NeoClient(URL);
         ExecutorService pool = createPool(CPU,CPU*4);
         long time = System.currentTimeMillis();
         for (int i=0;i<RUNS;i++) {
