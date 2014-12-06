@@ -1,14 +1,12 @@
 package graphrobustness;
 
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static graphrobustness.Util.createPool;
-import static graphrobustness.Util.map;
+import static util.Util.createPool;
+import static util.Util.map;
 
 /**
  * @author mh
