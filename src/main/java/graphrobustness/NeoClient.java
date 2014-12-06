@@ -131,9 +131,9 @@ public class NeoClient implements AutoCloseable
             CloseableHttpResponse response = http.execute(request);
             assert response.getStatusLine().getStatusCode() == 200;
             InputStream content = response.getEntity().getContent();
-            while (content.read(BUFFER) != -1);
-            //String text = new Scanner(content).useDelimiter("\\Z").next();
-            //System.out.println("text = " + text);
+//            while (content.read(BUFFER) != -1);
+//            String text = new Scanner(content).useDelimiter("\\Z").next();
+//            System.out.println("text = " + text);
             content.close();
         }
     }
