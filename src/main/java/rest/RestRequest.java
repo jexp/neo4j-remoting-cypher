@@ -53,7 +53,7 @@ public class RestRequest implements AutoCloseable {
     }
 
     private <T> RequestResult<T> execute(HttpRequestBase request,Class<? extends T> type) {
-        System.err.println("Executing "+request.getClass().getSimpleName()+" to "+request.getURI());
+//        System.err.println("Executing "+request.getClass().getSimpleName()+" to "+request.getURI());
         try {
             request.setHeader( "Connection", "Keep-Alive" );
             CloseableHttpResponse response = http.execute(request);

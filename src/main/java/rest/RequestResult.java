@@ -26,7 +26,11 @@ public class RequestResult<T> {
         }
     }
 
-    private T parse(InputStream content, Class<? extends T> type) {
+    private T parse(InputStream content, Class<? extends T> type) throws IOException {
+        if (type==null) {
+            content.close();
+            return null;
+        }
         if (type.equals(CharSequence.class))
             return (T) Util.readAsString(content);
         else

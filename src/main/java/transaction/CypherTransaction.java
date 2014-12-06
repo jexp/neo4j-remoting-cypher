@@ -42,8 +42,12 @@ public class CypherTransaction implements AutoCloseable {
     }
 
     public CypherTransaction(String baseUri, ResultType type) {
+        this(new RestRequest(baseUri), type);
+    }
+
+    public CypherTransaction(RestRequest restRequest, ResultType type) {
         this.type = type;
-        this.request = new RestRequest(baseUri);
+        this.request = restRequest;
     }
 
     public static class Result implements Iterable<Map<String,Object>> {
@@ -135,12 +139,14 @@ public class CypherTransaction implements AutoCloseable {
     private String transactionUrl = null;
     private String commitUrl = null;
     private final RestRequest request;
-    private final List<Statement> statements = new ArrayList<>(10);
+    private final List<Statement> statements = new ArrayList<>(32);
 
     public void add(String statement, Map<String,Object> params) {
         statements.add(new Statement(statement,params,type));
     }
-
+    public void add(Collection<Statement> statements) {
+        this.statements.addAll(statements);
+    }
 
     public Result send(String statement, Map<String,Object> params) {
         add(statement,params);
@@ -176,7 +182,7 @@ public class CypherTransaction implements AutoCloseable {
         try {
             RequestResult<Map> result = request.post(url, map("statements", statements), Map.class);
             if (result.statusIs(HttpStatus.SC_OK) || result.statusIs(HttpStatus.SC_CREATED)) {
-                ArrayList<Statement> statementsCopy = new ArrayList<>(statements);
+                List<Statement> statementsCopy = new ArrayList<>(statements);
                 return Result.toResults(handleResult(result,statementsCopy), statementsCopy, type);
             } else {
                 List<Map<String, String>> errors = errors("Http." + result.getStatus(), result.getText());
@@ -209,7 +215,7 @@ public class CypherTransaction implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Map> handleResult(RequestResult<Map> result, ArrayList<Statement> statements) {
+    private List<Map> handleResult(RequestResult<Map> result, List<Statement> statements) {
         Map<?, ?> resultData = result.getValue();
         List<Map<String,String>> errors = (List<Map<String, String>>) resultData.get("errors");
         if (result.statusIs(HttpStatus.SC_CREATED)) transactionUrl = result.getLocation();
