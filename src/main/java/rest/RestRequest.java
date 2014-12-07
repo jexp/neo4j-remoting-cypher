@@ -1,11 +1,15 @@
 package rest;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 import util.Util;
 
 import java.io.IOException;
@@ -16,8 +20,25 @@ import java.util.Map;
  * @since 06.12.14
  */
 public class RestRequest implements AutoCloseable {
+    ConnectionKeepAliveStrategy keepAliveStrat = new DefaultConnectionKeepAliveStrategy() {
+        @Override
+        public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+            long keepAlive = super.getKeepAliveDuration(response, context);
+            if (keepAlive == -1) {
+                // Keep connections alive 5 seconds if a keep-alive value
+                // has not be explicitly set by the server
+                keepAlive = 5000;
+            }
+            return keepAlive;
+        }
+
+    };
+
     private final CloseableHttpClient http = HttpClients.custom()
+            .setKeepAliveStrategy(keepAliveStrat)
             .setConnectionManager( new BasicHttpClientConnectionManager() ).build();
+
+
     private final String uri;
 
     public RestRequest(String uri) {

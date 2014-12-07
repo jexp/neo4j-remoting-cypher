@@ -1,8 +1,10 @@
 package rest;
 
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import util.Util;
 
 import java.io.IOException;
@@ -21,9 +23,11 @@ public class RequestResult<T> {
         this.status = response.getStatusLine().getStatusCode();
         Header loc = response.getLastHeader(HttpHeaders.LOCATION);
         this.location = loc != null ? loc.getValue() : null;
-        try (InputStream content = response.getEntity().getContent()) {
+        HttpEntity entity = response.getEntity();
+        try (InputStream content = entity.getContent()) {
             this.value = parse(content, type);
         }
+        EntityUtils.consume(entity);
     }
 
     private T parse(InputStream content, Class<? extends T> type) throws IOException {
