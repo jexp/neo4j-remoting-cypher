@@ -27,7 +27,7 @@ public class RequestResult<T> {
         try (InputStream content = entity.getContent()) {
             this.value = parse(content, type);
         }
-        EntityUtils.consume(entity);
+//        EntityUtils.consume(entity);
     }
 
     private T parse(InputStream content, Class<? extends T> type) throws IOException {

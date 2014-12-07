@@ -1,10 +1,12 @@
 package rest;
 
+import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClients;
@@ -20,23 +22,27 @@ import java.util.Map;
  * @since 06.12.14
  */
 public class RestRequest implements AutoCloseable {
-    ConnectionKeepAliveStrategy keepAliveStrat = new DefaultConnectionKeepAliveStrategy() {
+    ConnectionKeepAliveStrategy keepAliveStrategy = new DefaultConnectionKeepAliveStrategy() {
+        // Keep connections alive 5 seconds if a keep-alive value has not be explicitly set by the server
         @Override
         public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
             long keepAlive = super.getKeepAliveDuration(response, context);
-            if (keepAlive == -1) {
-                // Keep connections alive 5 seconds if a keep-alive value
-                // has not be explicitly set by the server
-                keepAlive = 5000;
-            }
-            return keepAlive;
+            return keepAlive != -1 ? keepAlive : 5000;
         }
+    };
 
+    ConnectionReuseStrategy connectionReuseStrategy = new DefaultConnectionReuseStrategy() {
+        @Override
+        public boolean keepAlive(HttpResponse response, HttpContext context) {
+            return true;
+        }
     };
 
     private final CloseableHttpClient http = HttpClients.custom()
-            .setKeepAliveStrategy(keepAliveStrat)
-            .setConnectionManager( new BasicHttpClientConnectionManager() ).build();
+// didn't help in testing
+//            .setKeepAliveStrategy(keepAliveStrategy)
+//            .setConnectionReuseStrategy(connectionReuseStrategy)
+            .setConnectionManager(new BasicHttpClientConnectionManager()).build();
 
 
     private final String uri;
