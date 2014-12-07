@@ -60,7 +60,7 @@ public class MultiThreadedPerfTest {
 
     private static void execute(RestRequest request, int count) {
         for (int i=0;i<count;i++) {
-	        request.get(URL, CharSequence.class);
+	        request.get(URL, null);
             // System.out.println(request.get(URL, CharSequence.class).getText());
         }
     }

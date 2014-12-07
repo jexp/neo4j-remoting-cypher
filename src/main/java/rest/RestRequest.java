@@ -1,9 +1,12 @@
 package rest;
 
 import org.apache.http.ConnectionReuseStrategy;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
@@ -11,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import util.Util;
 
@@ -22,6 +26,20 @@ import java.util.Map;
  * @since 06.12.14
  */
 public class RestRequest implements AutoCloseable {
+
+    /*
+    static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager() {
+        {
+            // Increase max total connection to 200
+            setMaxTotal(20);
+            // Increase default max connection per route to 20
+            setDefaultMaxPerRoute(20);
+            // Increase max connections for localhost:8080 to 50
+            //        HttpHost localhost = new HttpHost("localhost", 8080);
+            //        setMaxPerRoute(new HttpRoute(localhost), 50);
+        }
+    };
+    */
     ConnectionKeepAliveStrategy keepAliveStrategy = new DefaultConnectionKeepAliveStrategy() {
         // Keep connections alive 5 seconds if a keep-alive value has not be explicitly set by the server
         @Override
@@ -38,12 +56,14 @@ public class RestRequest implements AutoCloseable {
         }
     };
 
-    private final CloseableHttpClient http = HttpClients.custom()
+    private /*static*/ final CloseableHttpClient http = HttpClients.custom()
+//            .setConnectionManager(cm)
 // didn't help in testing
 //            .setKeepAliveStrategy(keepAliveStrategy)
 //            .setConnectionReuseStrategy(connectionReuseStrategy)
-            .setConnectionManager(new BasicHttpClientConnectionManager()).build();
-
+            .setConnectionManager(new BasicHttpClientConnectionManager())
+            .setDefaultRequestConfig(RequestConfig.custom().setStaleConnectionCheckEnabled(false).build())
+            .build();
 
     private final String uri;
 
